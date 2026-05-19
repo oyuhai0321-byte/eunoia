@@ -44,9 +44,11 @@ export default function Home() {
     await signOut(auth)
   }
 
-  const filteredManga = mangaList.filter(manga =>
-    manga.title.toLowerCase().includes(search.toLowerCase())
-  )
+const filteredManga = search.trim() === '' 
+  ? mangaList 
+  : mangaList.filter(manga =>
+      manga.title && manga.title.toLowerCase().includes(search.toLowerCase())
+    )
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FBFF' }}>
