@@ -10,6 +10,7 @@ export default function Admin() {
   const [chapterForm, setChapterForm] = useState({ mangaId: '', chapterNumber: '', title: '', pages: '' })
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('manga')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetchManga()
@@ -52,6 +53,15 @@ export default function Admin() {
     await deleteDoc(doc(db, 'manga', id))
     await fetchManga()
   }
+
+  const filteredManga = mangaList.filter(manga => {
+    const q = searchQuery.toLowerCase()
+    return (
+      manga.title?.toLowerCase().includes(q) ||
+      manga.genre?.toLowerCase().includes(q) ||
+      manga.description?.toLowerCase().includes(q)
+    )
+  })
 
   const tabStyle = (tab) => ({
     padding: '10px 24px',
@@ -133,19 +143,44 @@ export default function Admin() {
       {activeTab === 'list' && (
         <div style={{ background: 'white', borderRadius: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', padding: '24px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#374151', marginBottom: '16px' }}>Manga жагсаалт</h2>
+
+          <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px', color: '#9CA3AF', pointerEvents: 'none' }}>🔍</span>
+            <input
+              placeholder="Гарчиг, төрлөөр хайх..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '12px', padding: '10px 16px 10px 40px', outline: 'none', fontSize: '14px', background: '#F8FBFF' }}
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: '16px', lineHeight: 1 }}>✕</button>
+            )}
+          </div>
+
+          <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '12px' }}>
+            {filteredManga.length} / {mangaList.length} manga
+          </p>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {mangaList.map(manga => (
-              <div key={manga.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: '12px', padding: '12px 16px' }}>
-                <div>
-                  <p style={{ fontWeight: '700', color: '#1F2937' }}>{manga.title}</p>
-                  <p style={{ fontSize: '12px', color: '#9CA3AF' }}>{manga.genre}</p>
+            {filteredManga.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#9CA3AF', padding: '24px', fontSize: '14px' }}>
+                "{searchQuery}" — олдсонгүй
+              </p>
+            ) : (
+              filteredManga.map(manga => (
+                <div key={manga.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #eee', borderRadius: '12px', padding: '12px 16px' }}>
+                  <div>
+                    <p style={{ fontWeight: '700', color: '#1F2937' }}>{manga.title}</p>
+                    <p style={{ fontSize: '12px', color: '#9CA3AF' }}>{manga.genre}</p>
+                  </div>
+                  <button onClick={() => handleDeleteManga(manga.id)}
+                    style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px' }}>
+                    Устгах
+                  </button>
                 </div>
-                <button onClick={() => handleDeleteManga(manga.id)}
-                  style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '14px' }}>
-                  Устгах
-                </button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}

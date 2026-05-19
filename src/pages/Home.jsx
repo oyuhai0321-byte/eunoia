@@ -28,6 +28,7 @@ export default function Home() {
   const navigate = useNavigate()
   const [mangaList, setMangaList] = useState([])
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     const fetchManga = async () => {
@@ -42,6 +43,10 @@ export default function Home() {
   const handleLogout = async () => {
     await signOut(auth)
   }
+
+  const filteredManga = mangaList.filter(manga =>
+    manga.title.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div style={{ minHeight: '100vh', background: '#F8FBFF' }}>
@@ -72,21 +77,23 @@ export default function Home() {
         <input
           type="text"
           placeholder="Manga хайх..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
           style={{ border: '1px solid #ddd', borderRadius: '24px', padding: '12px 24px', width: '100%', maxWidth: '480px', outline: 'none', fontSize: '16px', background: 'white' }}
         />
       </div>
 
       <div style={{ padding: '40px 32px' }}>
-        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#374151', marginBottom: '24px' }}>Алдартай Manga</h3>
+        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#374151', marginBottom: '24px' }}>
+          {search ? `"${search}" хайлтын үр дүн` : 'Алдартай Manga'}
+        </h3>
         {loading ? (
           <p style={{ color: '#9CA3AF' }}>Ачаалж байна...</p>
+        ) : filteredManga.length === 0 ? (
+          <p style={{ color: '#9CA3AF' }}>Manga олдсонгүй</p>
         ) : (
-          <div style={{ 
-  display: 'grid', 
-  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
-  gap: '16px' 
-}}>
-            {mangaList.map(manga => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+            {filteredManga.map(manga => (
               <MangaCard key={manga.id} manga={manga} />
             ))}
           </div>
